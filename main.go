@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"runtime"
+	"runtime/trace"
 	"sync"
 )
 
@@ -14,6 +16,7 @@ func main() {
 		n = flag.Int("n", 100, "find the primes between 1, n")
 		p = flag.Int("p", 0, "the number of P")
 		s = flag.Bool("s", true, "show the prime number")
+		t = flag.Bool("t", true, "open the trace")
 	)
 	flag.Parse()
 	if *n < 1 {
@@ -22,6 +25,10 @@ func main() {
 	}
 	if *p > 0 {
 		runtime.GOMAXPROCS(*p)
+	}
+	if *t {
+		deferFn := opentrace("trace.out")
+		defer deferFn()
 	}
 
 	fmt.Printf("n: %d, NumCPU: %d, GOMAXPROCS: %d\n", *n, runtime.NumCPU(), runtime.GOMAXPROCS(0))
@@ -61,4 +68,22 @@ func isPrime(value int) bool {
 		}
 	}
 	return value > 1
+}
+
+func opentrace(file string) func() {
+	f, err := os.Create(file)
+	if err != nil {
+		log.Fatalf("failed to create trace output file: %v", err)
+	}
+
+	if err := trace.Start(f); err != nil {
+		log.Fatalf("failed to start trace: %v", err)
+	}
+
+	return func() {
+		trace.Stop()
+		if err := f.Close(); err != nil {
+			log.Fatalf("failed to close trace file: %v", err)
+		}
+	}
 }

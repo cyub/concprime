@@ -7,14 +7,18 @@ build: clean
 build-image:
 	docker build --tag $(IMAGE_NAME) .
 
-run:
-	docker run --rm -it concprime -s=0
+run: clean create-trace-file
+	docker run --rm -it -v $(PWD)/trace.out:/app/trace.out concprime -s=0
 
-run-withoutput:
-	docker run --rm -it concprime
+run-withoutput: clean create-trace-file
+	docker run --rm -it -v $(PWD)/trace.out:/app/trace.out concprime
 
 benchmark:
 	go test -benchmem -bench=. -benchtime=10s
 
 clean:
 	go clean
+	rm -rf trace.out
+
+create-trace-file:
+	touch trace.out
