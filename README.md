@@ -9,9 +9,9 @@ Benchmark the Effect of GOMAXPROCS In Docker with CPU limit.
 ### 测试
 
 ```bash
-docker run --rm -it cyub/concprime:1.0
-docker run --cpus 1 --rm -it cyub/concprime:1.0
-docker run --cpus 1 --rm -e GOMAXPROCS=1 -it cyub/concprime:1.0
+docker run --rm -it yubing/concprime
+docker run --cpus 1 --rm -it yubing/concprime
+docker run --cpus 1 --rm -e GOMAXPROCS=1 -it yubing/concprime
 ```
 
 ### 基准测试
