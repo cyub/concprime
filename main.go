@@ -17,7 +17,7 @@ func main() {
 	)
 	flag.Parse()
 	if *n < 1 {
-		fmt.Fprintln(os.Stderr, "n should greate than 0")
+		fmt.Fprintln(os.Stderr, "n should greater than 0")
 		os.Exit(1)
 	}
 	if *p > 0 {
@@ -25,29 +25,33 @@ func main() {
 	}
 
 	fmt.Printf("n: %d, NumCPU: %d, GOMAXPROCS: %d\n", *n, runtime.NumCPU(), runtime.GOMAXPROCS(0))
-	ch := make(chan int, 1)
-	var wg sync.WaitGroup
-	wg.Add(*n)
-	for i := 1; i <= *n; i++ {
-		go func(i int) {
-			defer wg.Done()
-			if isPrime(i) {
-				ch <- i
-			}
-		}(i)
-	}
-
-	go func() {
-		for i := range ch {
-			if *s {
-				fmt.Println(i)
-			} else {
-				_ = i
-			}
+	for prime := range findPrimes(*n) {
+		if *s {
+			fmt.Println(prime)
+		} else {
+			_ = prime
 		}
+	}
+}
+
+func findPrimes(num int) <-chan int {
+	ch := make(chan int)
+	go func() {
+		var wg sync.WaitGroup
+		wg.Add(num)
+		for i := 1; i <= num; i++ {
+			go func(i int) {
+				defer wg.Done()
+				if isPrime(i) {
+					ch <- i
+				}
+			}(i)
+		}
+		wg.Wait()
+		close(ch)
 	}()
-	wg.Wait()
-	close(ch)
+
+	return ch
 }
 
 func isPrime(value int) bool {
